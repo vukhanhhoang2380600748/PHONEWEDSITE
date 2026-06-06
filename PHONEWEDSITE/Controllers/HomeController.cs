@@ -1,13 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.DB;
 using PHONEWEDSITE.Models;
 using System.Diagnostics;
 
 namespace PHONEWEDSITE.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController(PhoneStoreDbContext ctx) : Controller
     {
-        public IActionResult Index()
+        readonly PhoneStoreDbContext _ctx = ctx;
+        public async Task<IActionResult> Index()
         {
+            var featured = await _ctx.Products
+                .Where(o => o.Featured!.Value).Take(10)
+                .ToListAsync();
+            ViewBag.Featured = featured;
             return View();
         }
 
@@ -16,12 +23,26 @@ namespace PHONEWEDSITE.Controllers
             return View();
         }
 
-        public IActionResult Products() { return View(); }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult Products()
+        {
+            return View();
+        }
+
+        public IActionResult Details()
+        {
+
+            return View();
+        }
+
+        public IActionResult Carts()
+        {
+            return View();
         }
     }
 }

@@ -1,7 +1,24 @@
+using Microsoft.EntityFrameworkCore;
+using PhoneStore.DB;
+using PHONEWEDSITE.Controllers;
+using System.Net;
+
 var builder = WebApplication.CreateBuilder(args);
 
+//add db to services
+builder.Services.AddDbContext<PhoneStoreDbContext>
+    (o => o.UseSqlServer(builder.Configuration.GetConnectionString("PhoneStoreConnection")));
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+//register session
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(o => {
+    o.IdleTimeout = TimeSpan.FromMinutes(30);
+    o.Cookie.HttpOnly = true;
+    o.Cookie.IsEssential = true;
+});
 
 var app = builder.Build();
 
@@ -16,10 +33,16 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthorization();
 
 app.MapStaticAssets();
 
+app.MapControllerRoute(
+  name: "areas",
+  pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}"
+);
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
